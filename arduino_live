@@ -1,0 +1,180 @@
+#!/usr/bin/env python2
+
+"""
+arduino_live.py: 
+
+Read the data from serial port and plot it using FuncAnimation from matplotlib.
+
+"""
+from __future__ import print_function
+    
+__author__           = "Dilawar Singh, Ananthamurhty, and Shriya P"
+__copyright__        = "Copyright 2015, Bhalla lab, NCBS Bangalore"
+__credits__          = ["NCBS Bangalore"]
+__license__          = "GNU GPL"
+__version__          = "1.0.0"
+__maintainer__       = __author__
+__email__            = "dilawars@ncbs.res.in"
+__status__           = "Development"
+
+import arduino 
+import os
+import sys
+import time
+import readchar
+
+from collections import defaultdict
+import datetime
+import csv
+import numpy as np
+import codecs
+import gnuplotlib 
+
+running_trial_ = 0
+save_dir_ = '_data'
+trialNum = 0
+serial_port_ = None
+# How many crosses.
+crosses_ = 0
+args_ = None
+
+def trial_file_path( trialNum ):
+    return os.path.join( save_dir_, 'Trial%s.csv' % trialNum )
+
+def cleanup():
+    global gp_
+    serial_port_.write_msg( shutdown_command_ )
+    print("+++++++++++++++++++++++++++++ All over")
+    gp_.__del__( )
+    raise KeyboardInterrupt("Finished all")
+
+def init_serial( args, baudRate = 38400):
+    print( args )
+    global serial_port_ 
+    if args.port is None:
+        args.port = arduino.get_default_serial_port( )
+    serial_port_ = arduino.ArduinoPort( args.port, baudRate )
+    serial_port_.open( wait = True )
+
+def append_trial_data( outfile, data):
+    with open(outfile, 'a') as f:
+        msg = ",".join( [str(x) for x in data] )
+        f.write( msg + '\n' )
+
+
+def line_to_data( line ):
+    """Convert read line to valid data.
+    If >>> is in the line, print it onto console. THis is command response 
+    from arduino.
+    """
+    sizeOfData = 2
+    data = [None]*sizeOfData
+
+    if '>>>' in line:
+        print(line)
+        return data
+
+    if len( line.split(',')) != sizeOfData:
+        return [ x for x in data ];
+
+    for i, x in enumerate(line.split(',')):
+        try:
+            data[i] = float(x.strip())
+        except Exception as e:
+            # if can't change to float, use as it is
+            data[i] = x.strip()
+    return data
+
+def init_gui():
+    text_.set_text('')
+    return gline_, gline1_, text_
+
+def collectAndPlot( ):
+    global q_
+    global running_data_line_
+    global current_state_
+    global crosses_
+    tstart = time.time()
+    trialFile = trial_file_path( 0 )
+    tvec, yvec = [], []
+    crossStart, crossEnd = False, False
+    while True:
+        line = serial_port_.read_line()
+        data = line_to_data(line)
+        if (data[0] and data[1]) is None:
+            continue
+
+        try:
+            t, v = float(data[0]), float(data[1])
+        except Exception as e:
+            continue
+        tvec.append( t )
+        yvec.append( v )
+        if v >= 800 and not crossStart:
+            crossStart = True
+        elif v < 500 and crossStart:
+            crosses_ += 1
+            crossStart = False
+
+        # modify data[0] to write to file.
+        data[0] = datetime.datetime.now().isoformat( )
+        append_trial_data(trialFile, data)
+        title = '%s %2.2f %d' % ( args.port , time.time() - tstart, crosses_ )
+        if len( yvec ) % 10 == 0:
+            try:
+                N = 100
+                x, y = np.array( tvec[-N:] ), np.array( yvec[-N:] )
+                gnuplotlib.plot( ( x, y ), title = title , terminal = 'x11' 
+                        , yrange = [ 100, 1200 ]
+                        )
+                            
+            except Exception as e:
+                print( "Couln't plot : %s" % e )
+
+def init( args ):
+    """
+    Wait for first four questions to appear which requires writing to serial
+    port. If serial port is sending legal data then continue, questions are
+    probably answered.
+    """
+    global save_dir_ 
+    global args_ 
+    args_ = args
+    now = datetime.datetime.now()
+    timeStamp =  now.strftime('%Y-%m-%d_%H-%M-%S')
+    outdir = 'Bee%s' % timeStamp
+    save_dir_ = os.path.join( save_dir_, outdir )
+    if os.path.exists(save_dir_):
+        save_dir_ = os.path.join(save_dir_, timeStamp)
+        os.makedirs(save_dir_)
+    else:
+        os.makedirs(save_dir_) 
+
+    print( '[INFO] Init is done' )
+
+
+def main( args  ):
+    init( args  )
+    print( '[INFO] Init is done' )
+    collectAndPlot( )
+
+if __name__ == '__main__':
+    import argparse
+    # Argument parser.
+
+    description = '''Animate arduino data from serial port'''
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('--port', '-p'
+        , required = True
+        , help = 'Serial port [full path]'
+        )
+
+    args = parser.parse_args(  )
+    init_serial( args )
+    # Intialize logger after intializing serial port.
+    try:
+        main( args )
+    except KeyboardInterrupt as e:
+        cleanup()
+        quit()
+
