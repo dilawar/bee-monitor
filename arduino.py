@@ -54,7 +54,6 @@ class ArduinoPort( ):
 
     def read_line(self, **kwargs):
         line = self.port.readline()
-        # mysql.insert_line( line , auto_commit = True)
         return line.strip()
 
     def write_msg(self, msg):
