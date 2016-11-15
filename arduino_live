@@ -118,6 +118,7 @@ def collectAndPlot( ):
 
         # modify data[0] to write to file.
         data[0] = datetime.datetime.now().isoformat( )
+	data.append( crosses_ )
         append_trial_data(trialFile, data)
         title = '%s %2.2f %d' % ( args.port , time.time() - tstart, crosses_ )
         if len( yvec ) % 10 == 0:
