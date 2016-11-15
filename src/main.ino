@@ -67,12 +67,12 @@ void write_data_line( )
 {
     reset_watchdog( );
     int data = analogRead( SENSOR_PIN );
+    delay( 50 );
+
     unsigned long timestamp = millis() - trial_start_time_;
-    
     sprintf(msg_  , "%lu,%d" , timestamp, data);
     Serial.println(msg_);
     Serial.flush( );
-    delay( 50 );
 }
 
 
