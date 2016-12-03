@@ -18,7 +18,7 @@ endif
 
 ### BOARD_TAG
 ### It must be set to the board you are currently using. (i.e uno, mega2560, etc.)
-BOARD_TAG         = mega2560
+MCU 		  = atmega2560
 
 ### MONITOR_BAUDRATE
 ### It must be set to Serial baudrate value you are using.
@@ -43,8 +43,6 @@ MONITOR_PORT      = $(shell python $(PROJECT_DIR)/config/get_serial_ports.py)
 ### CURRENT_DIR
 ### Do not touch - used for binaries path
 CURRENT_DIR       = $(shell basename $(CURDIR))
-
-ARDUINO_LIBS 	  = LiquidCrystal
 
 ### OBJDIR
 ### This is where you put the binaries you just compile using 'make'
