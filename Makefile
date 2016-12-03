@@ -17,7 +17,8 @@ else
 endif
 
 ### BOARD_TAG
-### It must be set to the board you are currently using. (i.e uno, mega2560, etc.)
+### It must be set to the board you are currently using. (i.e uno, mega, etc.)
+BOARD_TAG 	  = mega
 MCU 		  = atmega2560
 
 ### MONITOR_BAUDRATE
