@@ -67,7 +67,7 @@ def line_to_data( line ):
     If >>> is in the line, print it onto console. THis is command response 
     from arduino.
     """
-    sizeOfData = 2
+    sizeOfData = 10
     data = [None]*sizeOfData
 
     if '>>>' in line:
@@ -83,6 +83,7 @@ def line_to_data( line ):
         except Exception as e:
             # if can't change to float, use as it is
             data[i] = x.strip()
+    print( data )
     return data
 
 def init_gui():

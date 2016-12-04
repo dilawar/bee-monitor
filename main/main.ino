@@ -70,16 +70,15 @@ void write_data_line( )
     reset_watchdog( );
     char msg[40];
     char *pos = msg;
+    unsigned long timestamp = millis() - trial_start_time_;
+    pos += sprintf( pos, "%lu,", timestamp);
     for (size_t i = 0; i < TOTAL_SENSOR_PINS; i++) 
     {
         int data = analogRead( sensor_pins_[i] );
-        pos += sprintf( pos, "%3d,", data );
+        pos += sprintf( pos, "%d,", data );
     }
     delay( 50 );
-    unsigned long timestamp = millis() - trial_start_time_;
-    Serial.print( timestamp );
-    Serial.print(msg);
-    Serial.print( '\n' );
+    Serial.println(msg);
     Serial.flush( );
 }
 
