@@ -17,8 +17,10 @@
 #include <avr/wdt.h>
 
 #define         DRY_RUN                     1
+
 // Pins etc.
-#define         SENSOR_PIN                  A0
+#define         TOTAL_SENSOR_PINS           9
+int sensor_pins_[TOTAL_SENSOR_PINS] = { A0, A1, A2, A3, A4, A5, A6, A7, A8 };
 
 bool reboot_ = false;
 
@@ -66,12 +68,18 @@ void reset_watchdog( )
 void write_data_line( )
 {
     reset_watchdog( );
-    int data = analogRead( SENSOR_PIN );
+    char msg[40];
+    char *pos = msg;
+    for (size_t i = 0; i < TOTAL_SENSOR_PINS; i++) 
+    {
+        int data = analogRead( sensor_pins_[i] );
+        pos += sprintf( pos, "%3d,", data );
+    }
     delay( 50 );
-
     unsigned long timestamp = millis() - trial_start_time_;
-    sprintf(msg_  , "%lu,%d" , timestamp, data);
-    Serial.println(msg_);
+    Serial.print( timestamp );
+    Serial.print(msg);
+    Serial.print( '\n' );
     Serial.flush( );
 }
 
@@ -85,7 +93,8 @@ void setup()
     wdt_reset();
     stamp_ = 0;
 
-    pinMode( SENSOR_PIN, INPUT );
+    for (size_t i = 0; i < TOTAL_SENSOR_PINS; i++) 
+        pinMode( sensor_pins_[i], INPUT );
 }
 
 

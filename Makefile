@@ -24,7 +24,7 @@ MCU 		  = atmega2560
 ### MONITOR_BAUDRATE
 ### It must be set to Serial baudrate value you are using.
 MONITOR_BAUDRATE       = 38400
-AVRDUDE_ARD_BAUDRATE   = 19200
+AVRDUDE_ARD_BAUDRATE   = 115200
 AVRDUDE_ARD_PROGRAMMER = avrispmkii
 
 ### CFLAGS_STD
