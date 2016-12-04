@@ -25,7 +25,7 @@ MCU 		  = atmega2560
 ### It must be set to Serial baudrate value you are using.
 MONITOR_BAUDRATE       = 38400
 AVRDUDE_ARD_BAUDRATE   = 19200
-AVRDUDE_ARD_PROGRAMMER = arduino
+AVRDUDE_ARD_PROGRAMMER = avrispmkii
 
 ### CFLAGS_STD
 ### Set the C standard to be used during compilation. Documentation (https://github.com/WeAreLeka/Arduino-Makefile/blob/std-flags/arduino-mk-vars.md#cflags_std)
@@ -52,7 +52,7 @@ CURRENT_DIR       = $(shell basename $(CURDIR))
 OBJDIR            = $(PROJECT_DIR)/bin/$(BOARD_TAG)/$(CURRENT_DIR)
 
 ## INO file and other cpp files
-LOCAL_INO_SRCS     = $(PROJECT_DIR)/src/main.ino
+LOCAL_INO_SRCS     = $(PROJECT_DIR)/main/main.ino
 LOCAL_CPP_SRCS     = 
 
 ### Do not touch - the path to Arduino.mk, inside the ARDMK_DIR
