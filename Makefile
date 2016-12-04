@@ -23,7 +23,9 @@ MCU 		  = atmega2560
 
 ### MONITOR_BAUDRATE
 ### It must be set to Serial baudrate value you are using.
-MONITOR_BAUDRATE  = 38400
+MONITOR_BAUDRATE       = 38400
+AVRDUDE_ARD_BAUDRATE   = 19200
+AVRDUDE_ARD_PROGRAMMER = arduino
 
 ### CFLAGS_STD
 ### Set the C standard to be used during compilation. Documentation (https://github.com/WeAreLeka/Arduino-Makefile/blob/std-flags/arduino-mk-vars.md#cflags_std)
