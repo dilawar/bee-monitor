@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 
 """
-arduino_live.py: 
+monitor
 
-Read the data from serial port and plot it using FuncAnimation from matplotlib.
+Read the data from serial port and plot it using gnuplot.
 
 """
 from __future__ import print_function
@@ -61,34 +61,39 @@ def append_trial_data( outfile, data):
         msg = ",".join( [str(x) for x in data] )
         f.write( msg + '\n' )
 
-
 def line_to_data( line ):
     """Convert read line to valid data.
     If >>> is in the line, print it onto console. THis is command response 
     from arduino.
     """
-    sizeOfData = 10
-    data = [None]*sizeOfData
-
+    data = [ ]
     if '>>>' in line:
         print(line)
         return data
 
-    if len( line.split(',')) != sizeOfData:
-        return [ x for x in data ];
-
-    for i, x in enumerate(line.split(',')):
+    secs  = filter( None, line.split(',') )
+    for i, x in enumerate( secs ):
         try:
-            data[i] = float(x.strip())
+            data.append( float(x.strip()) )
         except Exception as e:
-            # if can't change to float, use as it is
-            data[i] = x.strip()
-    print( data )
+            data = None
     return data
 
 def init_gui():
     text_.set_text('')
     return gline_, gline1_, text_
+
+def countCrossing( vecs, state ):
+    global crosses_
+    maxThres = max( vecs ) * 0.75
+    assert len( state ) >= len( vecs )
+    for i, v in enumerate( vecs ):
+        if v < 5 and not state[i]:
+            state[i] = True
+        elif v > 15 and state[i]:
+            crosses_ += 1
+            state[i] = False
+    return state
 
 def collectAndPlot( ):
     global q_
@@ -99,24 +104,22 @@ def collectAndPlot( ):
     trialFile = trial_file_path( 0 )
     tvec, yvec = [], []
     crossStart, crossEnd = False, False
+    # Maximum pins are 12.
+    states = [ False ] * 12
     while True:
         line = serial_port_.read_line()
         data = line_to_data(line)
-        if (data[0] and data[1]) is None:
+        if data is None:
             continue
 
         try:
-            t, v = float(data[0]), float(data[1])
+            t, vs = float(data[0]), data[1:]
         except Exception as e:
             continue
-        tvec.append( t )
-        yvec.append( v )
-        if v >= 800 and not crossStart:
-            crossStart = True
-        elif v < 500 and crossStart:
-            crosses_ += 1
-            crossStart = False
 
+        tvec.append( t )
+        yvec.append( sum(vs) )
+        states = countCrossing( vs, states )
         # modify data[0] to write to file.
         data[0] = datetime.datetime.now().isoformat( )
 	data.append( crosses_ )
@@ -127,7 +130,7 @@ def collectAndPlot( ):
                 N = 100
                 x, y = np.array( tvec[-N:] ), np.array( yvec[-N:] )
                 gnuplotlib.plot( ( x, y ), title = title , terminal = 'x11' 
-                        , yrange = [ 100, 1200 ]
+                        , yrange = [ 0, 300 ]
                         )
                             
             except Exception as e:
