@@ -77,7 +77,7 @@ def line_to_data( line ):
             data.append( float(x.strip()) )
         except Exception as e:
             data = None
-    print( data )
+    # print( data )
     return data
 
 def init_gui():
