@@ -131,7 +131,7 @@ def collectAndPlot( ):
                 N = 100
                 x, y = np.array( tvec[-N:] ), np.array( yvec[-N:] )
                 gnuplotlib.plot( ( x, y ), title = title , terminal = 'x11' 
-                        , yrange = [ 0, 500 ]
+                        # , yrange = [ 0, 500 ]
                         )
                             
             except Exception as e:

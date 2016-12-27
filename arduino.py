@@ -54,6 +54,7 @@ class ArduinoPort( ):
 
     def read_line(self, **kwargs):
         line = self.port.readline()
+        print( line )
         return line.strip()
 
     def write_msg(self, msg):

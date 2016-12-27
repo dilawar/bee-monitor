@@ -15,8 +15,7 @@
  */
 
 #include <avr/wdt.h>
-
-#define         DRY_RUN                     1
+#include <SD.h>
 
 // Pins etc.
 #define         TOTAL_SENSOR_PINS           9
@@ -36,6 +35,10 @@ unsigned long currentTime( )
 {
     return millis() - trial_start_time_;
 }
+
+// SD card related.
+String prefix_ = "beemonitor_data_";
+String outfile_ = "beemonitor_data_0.txt";
 
 /*-----------------------------------------------------------------------------
  *  WATCH DOG
@@ -75,14 +78,24 @@ void write_data_line( )
     for (size_t i = 0; i < TOTAL_SENSOR_PINS; i++) 
     {
         int data = analogRead( sensor_pins_[i] );
+        delay( 10 );
         pos += sprintf( pos, "%d,", data );
     }
-    delay( 50 );
+
+    // Write to SD card.
+    File dataFile = SD.open( outfile_, FILE_WRITE );
+    if( dataFile )
+    {
+        dataFile.println( msg );
+        dataFile.close( );
+    }
+
     Serial.println(msg);
     Serial.flush( );
 }
 
 
+// Setup board.
 void setup()
 {
     Serial.begin( 38400 );
@@ -94,6 +107,38 @@ void setup()
 
     for (size_t i = 0; i < TOTAL_SENSOR_PINS; i++) 
         pinMode( sensor_pins_[i], INPUT );
+
+    
+    /*-----------------------------------------------------------------------------
+     *  Setup SD card interface. Following configuration is from 
+     *  http://MOSIw.bajdi.com/arduino-mega-2560-and-sd-card-modul/
+     *  MOSI : 51
+     *  MISO : 50
+     *  CLK  : 52
+     *  CS   : 53
+     *-----------------------------------------------------------------------------*/
+    Serial.println( "Initializing SD card" );
+    pinMode( 53, OUTPUT );
+    if( ! SD.begin( 53 ) )
+        while( true )
+            Serial.println( "Card failed, or not present. " );
+    else
+        Serial.println( "Car is initialized successfully " );
+
+    // Get a filename
+    for (size_t i = 0; i < 1000; i++) 
+    {
+        String filename = prefix_ + String( i ) + ".txt";
+        if(SD.exists( filename ))
+            Serial.println( "File " + filename + " exists " );
+        else
+        {
+            outfile_ = filename;
+            break;
+        }
+    }
+    Serial.println( "Data will be written to " + outfile_ );
+    delay( 2000 );
 }
 
 

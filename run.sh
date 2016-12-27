@@ -23,4 +23,4 @@ set -o nounset                              # Treat unset variables as an error
 
 PORT=$(bash ./list_serial_ports.sh)
 ./build_and_upload.sh $PORT
-python monitor -p $PORT
+python monitor.py -p $PORT

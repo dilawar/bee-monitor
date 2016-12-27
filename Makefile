@@ -55,6 +55,9 @@ OBJDIR            = $(PROJECT_DIR)/bin/$(BOARD_TAG)/$(CURRENT_DIR)
 LOCAL_INO_SRCS     = $(PROJECT_DIR)/main/main.ino
 LOCAL_CPP_SRCS     = 
 
+# Libraries 
+ARDUINO_LIBS = SPI SD
+
 ### Do not touch - the path to Arduino.mk, inside the ARDMK_DIR
 include $(ARDMK_DIR)/Arduino.mk
 
