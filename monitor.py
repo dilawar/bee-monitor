@@ -43,7 +43,6 @@ def trial_file_path( trialNum ):
 
 def cleanup():
     global gp_
-    serial_port_.write_msg( shutdown_command_ )
     print("+++++++++++++++++++++++++++++ All over")
     gp_.__del__( )
     raise KeyboardInterrupt("Finished all")
