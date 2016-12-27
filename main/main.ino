@@ -36,9 +36,10 @@ unsigned long currentTime( )
     return millis() - trial_start_time_;
 }
 
-// SD card related.
-String prefix_ = "beemonitor_data_";
-String outfile_ = "beemonitor_data_0.txt";
+// SD card related. 
+// Filename must not be longer than 8.3. 
+String prefix_ = "data";
+String outfile_ = "data0.txt";
 
 /*-----------------------------------------------------------------------------
  *  WATCH DOG
@@ -89,6 +90,8 @@ void write_data_line( )
         dataFile.println( msg );
         dataFile.close( );
     }
+    else
+        Serial.println( "Could not write to SD card" );
 
     Serial.println(msg);
     Serial.flush( );
@@ -120,13 +123,15 @@ void setup()
     Serial.println( "Initializing SD card" );
     pinMode( 53, OUTPUT );
     if( ! SD.begin( 53 ) )
+    {
         while( true )
             Serial.println( "Card failed, or not present. " );
+    }
     else
-        Serial.println( "Car is initialized successfully " );
+        Serial.println( "Card is initialized successfully " );
 
     // Get a filename
-    for (size_t i = 0; i < 1000; i++) 
+    for (size_t i = 0; i < 9999; i++) 
     {
         String filename = prefix_ + String( i ) + ".txt";
         if(SD.exists( filename ))
