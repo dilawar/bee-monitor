@@ -93,7 +93,7 @@ void write_data_line( )
         if( data < 5 )
             nLow += 1;
         values_[ i ] = data;
-        //delay( 5 );
+        delay( 5 );
         pos += sprintf( pos, "%d,", data );
     }
 
