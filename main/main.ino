@@ -26,6 +26,7 @@ int sensor_pins_[TOTAL_SENSOR_PINS] = { A0, A1, A2, A3, A4, A5, A6, A7, A8 };
 int values_[ TOTAL_SENSOR_PINS ] = {};
 int state_[ TOTAL_SENSOR_PINS ] = { };
 long count_crossing_ = 0;
+int values_sum_ = 0;
 
 bool reboot_ = false;
 
@@ -85,19 +86,18 @@ void write_data_line( )
     unsigned long timestamp = millis() - trial_start_time_;
     pos += sprintf( pos, "%lu,", timestamp);
 
-    long valueSum = 0;
-
+    int nLow = 0;
     for (size_t i = 0; i < TOTAL_SENSOR_PINS; i++) 
     {
         int data = analogRead( sensor_pins_[i] );
-        valueSum += data;
+        if( data < 5 )
+            nLow += 1;
         values_[ i ] = data;
-        delay( 5 );
+        //delay( 5 );
         pos += sprintf( pos, "%d,", data );
     }
 
-    // Maximum is about 255. valueSum can go to 40 * 9 = 360
-    analogWrite( LED_PIN_SENSOR, valueSum / 2.0 );
+    analogWrite( LED_PIN_SENSOR, 200 * nLow );
 
     // Write to SD card.
     File dataFile = SD.open( outfile_, FILE_WRITE );
@@ -110,8 +110,10 @@ void write_data_line( )
     else
         Serial.println( "Could not write to SD card" );
 
+#if 0
     Serial.println(msg);
     Serial.flush( );
+#endif
 }
 
 
@@ -167,7 +169,7 @@ void setup()
         }
     }
     Serial.println( "Data will be written to " + outfile_ );
-    delay( 2000 );
+    delay( 200 );
 }
 
 
