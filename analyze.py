@@ -15,13 +15,18 @@ __status__           = "Development"
 import sys
 import os
 import datetime 
+from collections import defaultdict
 
 __fmt__ = "%Y-%m-%dT%H:%M:%S.%f"
 __offset__ = 5.5            # IST +5:30
 infile_ = None
-
 ncols = 9
+
+# how many crossing each hole
+holes = defaultdict( list )
+
 def get_count( infile_ ):
+    global holes
     HIGH, LOW = 1, 0
     result = [ ]
     states = [ HIGH ] * ncols
@@ -46,20 +51,44 @@ def get_count( infile_ ):
                 # LOW to HIGH transition.
                 if states[i] == LOW and curstate == HIGH:
                     count[i] += 1
-                    c = ','.join( [ '%d' for x in count ] )
-                    outfile.write( '%f,%s,%d' % (t, c, sum(count) ) )
+                    c = ','.join( [ str(x) for x in count ] )
+                    outfile.write( '%d,%s,%d\n' % (t, c, sum(count) ) )
+                    result.append( (t, count[:]) )
+                    holes[i].append( t )
                 states[i] = curstate 
-            result.append( count )
     print( 'Results are written to %s' % outfile )
     outfile.close( )
     return result 
+
+def plot( result ):
+    global infile_ 
+    global holes
+    import pylab
+    pylab.style.use( 'ggplot' )
+    tvec, countVec = [], []
+    for t, vals in result:
+        tvec.append( t / 3600e3 )
+        countVec.append( sum( vals ) )
+    pylab.subplot( 211 )
+    pylab.plot( tvec, countVec )
+    pylab.legend(loc='best', framealpha=0.4)
+    pylab.xlabel( 'Time (hour)' )
+    pylab.ylabel( 'Total crossing' )
+    pylab.subplot( 212 )
+    pylab.bar( range( ncols ), [ len(holes[hole]) for hole in holes ])
+    pylab.xlabel( 'Hole index' )
+    pylab.ylabel( 'Total crossing' )
+    pylab.tight_layout( )
+    pylab.savefig( '%s.png' % infile_ )
+    print( 'Saved to file %s.png' % infile_ )
+
 
 
 def main( ):
     global infile_
     infile_ = sys.argv[1]
-    get_count( infile_ )
-    #plot( timestamp, count )
+    result = get_count( infile_ )
+    plot( result )
 
 if __name__ == '__main__':
     main()
