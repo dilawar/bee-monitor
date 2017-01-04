@@ -26,20 +26,23 @@ ncols = 9
 # how many crossing each hole
 holes = defaultdict( list )
 
-def get_count( infile_ ):
+args_ = None
+
+def get_count(  ):
     global holes
+    global args_
     HIGH, LOW = 1, 0
     result = [ ]
     states = [ HIGH ] * ncols
     count = [ 0 ] * ncols
     checkpoint = 0.0
-    # outfile = open( '%s_out.txt' % infile_ , 'w' )
     nlines = 0
-    with open( infile_, 'r' ) as f:
+    with open( args_.infile, 'r' ) as f:
         for l in f:
             nlines += 1
             data = [ float(x) for x in filter(None, l.strip( ).split( ',' )) ]
             t = data[0]
+            # time = starttime + datetime.timedelta( milliseconds = t )
             if t  / ( 1000 * 3600 ) >= checkpoint:
                 print( '%f hours are done' % checkpoint )
                 checkpoint += 1.0
@@ -55,21 +58,19 @@ def get_count( infile_ ):
                 if states[i] == LOW and curstate == HIGH:
                     count[i] += 1
                     c = ','.join( [ str(x) for x in count ] )
-                    # outfile.write( '%d,%s,%d\n' % (t, c, sum(count) ) )
                     result.append( (t, count[:]) )
                     holes[i].append( t )
                 states[i] = curstate 
-    # print( 'Results are written to %s' % outfile )
-    # outfile.close( )
     return result 
 
 def renormalize( tvec, vec ):
     global infile_ 
-    newT = np.arange( 0, max( tvec ), 1000 ) * 1e-3
+    # resample time every second i.e. 1000 ms.
+    newT = np.arange( 0, max( tvec ), 1000 )
     newval = np.interp( newT, tvec, vec )
     np.savetxt( '%s_out.csv' % infile_, np.vstack((newT, newval)).T, delimiter = ',' )
     print( 'Renormalized data is written to %s_out.csv' % infile_ )
-    return newT, newval
+    return newT * 1e-3, newval
 
 def diff( vec ):
     result = np.diff( vec ) 
@@ -88,10 +89,31 @@ def plot( result ):
 
     tvec, yvec = renormalize( tvec, countVec )
 
+    # For plotting, make the time from midnight to midnight
+    startT = [ int(x) for x in args_.start_time.split( ':' ) ]
+    startTInSec = 60 * ( startT[0] * 60 + startT[1] )
+    print( 'Starting time of experiment: %s' % startT )
+    tvec += startTInSec 
+
     pylab.subplot( 311 )
     # pylab.plot( tvec, yvec )
-    pylab.plot( tvec[1:] / 3600, diff(yvec) * 60 )
-    pylab.legend(loc='best', framealpha=0.4)
+    ndays = 0
+    tvec, rate = tvec[1:], diff( yvec ) * 60
+    secsInDay = 24 * 3600
+    i = 0
+    while True:
+        idx = np.where( (tvec > i * secsInDay ) & (tvec <= (i+1) * secsInDay )
+                )[0]
+        if len(idx) > 0:
+            print( 'Plotting for day %d' % i )
+            x = tvec[ idx ] - (i * secsInDay )
+            y = rate[ idx ]
+            pylab.plot( x/ 3600, y, '.', label = 'day %d' % (i+1) )
+            pylab.legend(loc='best', framealpha=0.4)
+        else:
+            break
+        i += 1
+
     pylab.xlabel( 'Time (hour)' )
     pylab.ylabel( 'Rate of crossing per minute' )
     pylab.subplot( 312 )
@@ -100,16 +122,29 @@ def plot( result ):
     pylab.ylabel( 'Total crossing' )
     pylab.subplot( 313 )
     pylab.tight_layout( )
-    pylab.savefig( '%s.png' % infile_ )
-    print( 'Saved to file %s.png' % infile_ )
-
-
+    pylab.savefig( '%s.png' % args_.infile )
+    print( 'Saved to file %s.png' % args_.infile )
 
 def main( ):
-    global infile_
-    infile_ = sys.argv[1]
-    result = get_count( infile_ )
-    plot( result )
+    global args_
+    import argparse
+    # Argument parser.
+    description = '''Analyze bee data'''
+    parser = argparse.ArgumentParser(description=description)
+    class Args: pass 
+    args_ = Args()
+    parser.add_argument('--infile', '-i'
+        , required = True
+        , type = str
+        , help = 'Data fle'
+        )
+    parser.add_argument('--start-time', '-t'
+        , required = True
+        , help = 'When recording started eg. 0:0 for midnight, 13:00 for 1pm'
+        )
+    parser.parse_args(namespace=args_)
+    result = get_count(  )
+    plot(  result )
 
 if __name__ == '__main__':
     main()
