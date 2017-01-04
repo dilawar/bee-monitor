@@ -112,8 +112,13 @@ def plot( result ):
             print( 'Plotting for day %d' % i )
             x = tvec[ idx ] - (i * secsInDay )
             y = rate[ idx ]
-            np.savetxt( os.path.join( datadir, 'day_%d.csv' % (i+1) ), (x,y) )
-            pylab.plot( x/ 3600, y, '.', label = 'day %d' % (i+1) )
+            np.savetxt( 
+                    os.path.join( datadir, 'day_%d.csv' % (i+1) )
+                    , np.vstack((x,y)).T 
+                    , header = 'time,rate'
+                    , delimiter = ','
+                    )
+            pylab.plot( x/3600, y, '.', label = 'day %d' % (i+1) )
             pylab.legend(loc='best', framealpha=0.4)
         else:
             break
