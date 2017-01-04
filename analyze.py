@@ -44,7 +44,7 @@ def get_count(  ):
             t = data[0]
             # time = starttime + datetime.timedelta( milliseconds = t )
             if t  / ( 1000 * 3600 ) >= checkpoint:
-                print( '%f hours are done' % checkpoint )
+                print( '%.1f hours are done' % checkpoint )
                 checkpoint += 1.0
 
             for i, v in enumerate(data[1:]):
@@ -95,6 +95,10 @@ def plot( result ):
     print( 'Starting time of experiment: %s' % startT )
     tvec += startTInSec 
 
+    datadir = '%s_analysis' % args_.infile 
+    if not os.path.isdir( datadir ):
+        os.makedirs( datadir )
+
     pylab.subplot( 311 )
     # pylab.plot( tvec, yvec )
     ndays = 0
@@ -108,6 +112,7 @@ def plot( result ):
             print( 'Plotting for day %d' % i )
             x = tvec[ idx ] - (i * secsInDay )
             y = rate[ idx ]
+            np.savetxt( os.path.join( datadir, 'day_%d.csv' % (i+1) ), (x,y) )
             pylab.plot( x/ 3600, y, '.', label = 'day %d' % (i+1) )
             pylab.legend(loc='best', framealpha=0.4)
         else:
@@ -122,8 +127,9 @@ def plot( result ):
     pylab.ylabel( 'Total crossing' )
     pylab.subplot( 313 )
     pylab.tight_layout( )
-    pylab.savefig( '%s.png' % args_.infile )
-    print( 'Saved to file %s.png' % args_.infile )
+    outfile = os.path.join( datadir, 'result.png' )
+    pylab.savefig( outfile )
+    print( 'All data is saved to %s' % datadir )
 
 def main( ):
     global args_
