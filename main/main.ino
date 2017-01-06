@@ -110,7 +110,7 @@ void write_data_line( )
     else
         Serial.println( "Could not write to SD card" );
 
-#if 0
+#if 1
     Serial.println(msg);
     Serial.flush( );
 #endif
