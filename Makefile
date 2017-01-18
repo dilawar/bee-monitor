@@ -14,7 +14,7 @@ ifeq ($(UNAME_S),Darwin)
     ARDUINO_DIR       = /Applications/Arduino.app/Contents/Java
 else
     ARDUINO_DIR       = $(dir $(shell readlink -f $(ARDUINO_BIN)))
-    ARDUINO_DIR       = /usr/share/arduino
+    # ARDUINO_DIR       = /usr/share/arduino
 endif
 
 ### BOARD_TAG
