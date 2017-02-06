@@ -37,6 +37,8 @@ def get_count(  ):
     count = [ 0 ] * ncols
     checkpoint = 0.0
     nlines = 0
+    crossingStartTime = 0
+    crossingStarted = False
     with open( args_.infile, 'r' ) as f:
         for l in f:
             nlines += 1
@@ -48,19 +50,26 @@ def get_count(  ):
                 checkpoint += 1.0
 
             for i, v in enumerate(data[1:]):
-                if v > 5:
-                    curstate = HIGH
+                if v < 2:
+                    curstate = LOW
+                    if not crossingStarted:
+                        crossingStarted = True
+                        crossingStartTime = t
                 else:
-                    curstate = LOW 
+                    curstate = HIGH 
 
                 # Compare with previous state. The crossing happens when there is
                 # LOW to HIGH transition.
                 if states[i] == LOW and curstate == HIGH:
-                    count[i] += 1
-                    c = ','.join( [ str(x) for x in count ] )
-                    result.append( (t, count[:]) )
-                    holes[i].append( t )
+                    if t - crossingStartTime > 100:
+                        crossingStarted = False
+                        count[i] += 1
+                        c = ','.join( [ str(x) for x in count ] )
+                        result.append( (t, count[:]) )
+                        holes[i].append( t )
+
                 states[i] = curstate 
+
     return result 
 
 def renormalize( tvec, vec ):
