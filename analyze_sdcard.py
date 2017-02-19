@@ -136,9 +136,27 @@ def plot( nCrossings ):
     pylab.legend(loc='best', framealpha=0.4)
     pylab.subplot( 212 )
     pylab.tight_layout( )
-    outfile = '%s_sd_result.png' % args_.infile
+    outfile = '%s_result.png' % args_.infile
     pylab.savefig( outfile )
     print( 'Image saved to %s' % outfile )
+
+
+def main( ):
+    global args_
+    import argparse
+    # Argument parser.
+    description = '''Analyze bee data'''
+    parser = argparse.ArgumentParser(description=description)
+    class Args: pass 
+    args_ = Args()
+    parser.add_argument('--infile', '-i'
+        , required = True
+        , type = str
+        , help = 'Data fle'
+        )
+    parser.parse_args(namespace=args_)
+    nCrossHoles = count(  )
+    plot( nCrossHoles )
 
 if __name__ == '__main__':
     main()
