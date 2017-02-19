@@ -78,7 +78,7 @@ def getCrossingBinnedByMinutes( tvec, vec, threshold = 5 ):
 
 def count(  ):
     global args_
-    data = pandas.read_csv( args_.infile, header=None, sep = ',')
+    data = pandas.read_csv( args_.infile, header=None, sep = ',' )
     data.dropna( )
     tvec = data.ix[:,0].values
     holes = [ ]
@@ -102,15 +102,28 @@ def count(  ):
 def plot( nCrossings ):
     global args_ 
     pylab.subplot(211)
-    print( len( nCrossings ) )
 
+    # sum crossing from all holes.
+    allCrossings = np.sum( nCrossings, axis = 0 )
     tInHours = np.arange( 0, len( nCrossings[0] ) ) / 60.0
-    pylab.plot( tInHours, np.sum( nCrossings, axis = 0 ) )
-    pylab.ylabel( 'Crossing per min' )
-    pylab.legend(loc='best', framealpha=0.4)
 
+    nBlocks = 0
+    tvec, yvec = [], []
+    blockSizeInHours = 24
+    for i, t in enumerate( tInHours ) :
+        tvec.append( t - nBlocks * blockSizeInHours)
+        yvec.append( allCrossings[ i ] )
+        if t > (nBlocks + 1 ) * blockSizeInHours:
+            nBlocks += 1
+            pylab.plot( tvec, yvec, label = 'Day %d' % nBlocks )
+            pylab.legend(loc='best', framealpha=0.4)
+            tvec, yvec = [], []
+            print( '%d day is done' % nBlocks )
+
+    # Plot leftovers here
+    pylab.plot( tvec, yvec, label = 'Day %d' % nBlocks )
+    pylab.legend(loc='best', framealpha=0.4)
     pylab.subplot( 212 )
-        
     pylab.tight_layout( )
     outfile = '%s_result.png' % args_.infile
     pylab.savefig( outfile )
