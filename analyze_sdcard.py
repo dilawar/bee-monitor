@@ -23,7 +23,7 @@ from collections import defaultdict
 import pylab
 pylab.style.use( 'ggplot' )
 
-__fmt__ = "%Y-%m-%dT%H:%M:%S.%f"
+__fmt__ = "%f"
 __offset__ = 5.5            # IST +5:30
 infile_ = None
 ncols = 9
@@ -74,13 +74,20 @@ def getCrossingBinnedByMinutes( tvec, vec, threshold = 5 ):
     # print( 'Total minutes %d' % totalMinutes )
     return numCrossing
 
+def to_timestamp( t ):
+    v = datetime.now( ) + timedelta( seconds = t / 1000.0 )
+    return datetime.strftime( v, __fmt__ )
 
 
 def count(  ):
     global args_
     data = pandas.read_csv( args_.infile, header=None, sep = ',')
     data.dropna( )
+
     tvec = data.ix[:,0].values
+    # In sd card, this is not a read timestap. Make it.
+    tvec = map( to_timestamp, tvec )
+
     holes = [ ]
     # Arduino data
     pylab.figure( )
