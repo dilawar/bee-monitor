@@ -16,7 +16,7 @@ __status__           = "Development"
 
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 import pandas
 from collections import defaultdict
@@ -34,14 +34,18 @@ allCrossingTimes = []
 
 args_ = None
 
-def getCrossingsPerMin( tvec, vec, threshold = 5 ):
+def getCrossingBinnedByMinutes( tvec, vec, threshold = 5 ):
     """HIGH to LOW is crossing started 
     """
     state = 0
     crossingStarted = 0
     numCrossing = [ ]
     nCrossing = 0
+    totalMinutes = 0
     startT = datetime.strptime( tvec[0], __fmt__ )
+
+    binStartT = datetime.strptime( tvec[0], __fmt__ )
+    binStopT = binStartT + timedelta( seconds = 60 )
     crossingStartTime = startT
     for i, v in enumerate(vec):
         try:
@@ -49,8 +53,11 @@ def getCrossingsPerMin( tvec, vec, threshold = 5 ):
         except Exception as e:
             print( 'Faiied to parse  %s' % tvec[i] )
             continue 
-        if (t - startT).total_seconds( ) >= 60:
-            startT = t
+
+        if t >= binStopT:
+            binStartT = binStopT 
+            binStopT = binStartT + timedelta( seconds = 60 )
+            totalMinutes += 1
             numCrossing.append( nCrossing )
             nCrossing = 0
 
@@ -63,6 +70,8 @@ def getCrossingsPerMin( tvec, vec, threshold = 5 ):
             crossingStarted = True
             crossingStartTime = t
 
+    # print( 'Start time %s, End time %s' % ( startT, binStopT) )
+    # print( 'Total minutes %d' % totalMinutes )
     return numCrossing
 
 
@@ -82,7 +91,7 @@ def count(  ):
 
     for i in range( len(data.columns) - 2 ):
         yvec = data.ix[:,i+1].values
-        n = getCrossingsPerMin( tvec, yvec )
+        n = getCrossingBinnedByMinutes( tvec, yvec )
         print( 'Total crossing in this hole %f, avg %f, max %f' % (
                 np.sum(n), np.mean( n ), np.max( n ) )
                 )
@@ -96,7 +105,6 @@ def plot( nCrossings ):
     print( len( nCrossings ) )
 
     tInHours = np.arange( 0, len( nCrossings[0] ) ) / 60.0
-
     pylab.plot( tInHours, np.sum( nCrossings, axis = 0 ) )
     pylab.ylabel( 'Crossing per min' )
     pylab.legend(loc='best', framealpha=0.4)
