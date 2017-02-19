@@ -40,14 +40,17 @@ def getCrossingsPerMin( tvec, vec, threshold = 5 ):
     state = 0
     crossingStarted = 0
     numCrossing = [ ]
-    crossingStartTime = 0
     nCrossing = 0
     startT = datetime.strptime( tvec[0], __fmt__ )
+    crossingStartTime = startT
     for i, v in enumerate(vec):
-        t = datetime.strptime( tvec[i], __fmt__ )
-        if (t - startT).total_seconds( ) >= 60000:
+        try:
+            t = datetime.strptime( tvec[i], __fmt__ )
+        except Exception as e:
+            print( 'Faiied to parse  %s' % tvec[i] )
+            continue 
+        if (t - startT).total_seconds( ) >= 60:
             startT = t
-            # print( 'minute is over' )
             numCrossing.append( nCrossing )
             nCrossing = 0
 
@@ -70,9 +73,19 @@ def count(  ):
     data.dropna( )
     tvec = data.ix[:,0].values
     holes = [ ]
+    # Arduino data
+    pylab.figure( )
+    # plot this data.
+    pylab.plot( data.ix[:,10] )
+    pylab.savefig( '%s_aduino.png' % args_.infile )
+    print( 'Saved arduino data' )
+
     for i in range( len(data.columns) - 2 ):
         yvec = data.ix[:,i+1].values
         n = getCrossingsPerMin( tvec, yvec )
+        print( 'Total crossing in this hole %f, avg %f, max %f' % (
+                np.sum(n), np.mean( n ), np.max( n ) )
+                )
         holes.append( n )
     return holes 
 
