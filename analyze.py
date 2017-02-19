@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """analyze.py: 
 
 
@@ -14,7 +16,7 @@ __status__           = "Development"
 
 import sys
 import os
-import datetime 
+from datetime import datetime
 import numpy as np
 import pandas
 from collections import defaultdict
@@ -40,10 +42,10 @@ def getCrossingsPerMin( tvec, vec, threshold = 5 ):
     numCrossing = [ ]
     crossingStartTime = 0
     nCrossing = 0
-    startT = tvec[0]
+    startT = datetime.strptime( tvec[0], __fmt__ )
     for i, v in enumerate(vec):
-        t = tvec[i]
-        if t - startT >= 60000:
+        t = datetime.strptime( tvec[i], __fmt__ )
+        if (t - startT).total_seconds( ) >= 60000:
             startT = t
             # print( 'minute is over' )
             numCrossing.append( nCrossing )
@@ -53,8 +55,6 @@ def getCrossingsPerMin( tvec, vec, threshold = 5 ):
         if crossingStarted and state == 1:
             # Crossing is over
             crossingStarted = False
-            if t - crossingStarted < 300:
-                continue
             nCrossing += 1
         elif not crossingStarted and state == 0:
             crossingStarted = True
@@ -107,10 +107,6 @@ def main( ):
         , required = True
         , type = str
         , help = 'Data fle'
-        )
-    parser.add_argument('--start-time', '-t'
-        , required = True
-        , help = 'When recording started eg. 0:0 for midnight, 13:00 for 1pm'
         )
     parser.parse_args(namespace=args_)
     nCrossHoles = count(  )
