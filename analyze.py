@@ -115,12 +115,14 @@ def plot( nCrossings ):
         yvec.append( allCrossings[ i ] )
         if t > (nBlocks + 1 ) * blockSizeInHours:
             nBlocks += 1
-            pylab.plot( tvec, yvec, label = 'Day %d' % nBlocks )
+            pylab.plot( tvec, yvec, alpha = 0.6, label = 'Day %d' % nBlocks )
             pylab.legend(loc='best', framealpha=0.4)
+            pylab.xticks( np.arange(0, 24, 1) )
             tvec, yvec = [], []
             print( '%d day is done' % nBlocks )
 
     # Plot leftovers here
+    nBlocks += 1
     pylab.plot( tvec, yvec, label = 'Day %d' % nBlocks )
     pylab.legend(loc='best', framealpha=0.4)
     pylab.subplot( 212 )
