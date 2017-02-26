@@ -34,7 +34,7 @@ allCrossingTimes = []
 
 args_ = None
 
-def getCrossingBinnedByMinutes( tvec, vec, threshold = 5 ):
+def getCrossingBinnedByMinutes( tvec, vec, threshold = 1 ):
     """HIGH to LOW is crossing started 
     """
     state = 0
